@@ -6,20 +6,25 @@ as done.
 
 ## Environment notes
 
-- Dev machine has Command Line Tools only — no Xcode.app yet. Everything in
-  `PitterCore` builds/tests headlessly (`swift test`). App targets (`project.yml`,
-  `App/`) are ready but cannot be compiled/verified until Xcode is installed.
-- XcodeGen is not installed yet (`brew install xcodegen` when app work starts).
+- Xcode.app and XcodeGen are now installed (2026-10-13). `xcodegen generate`
+  then `xcodebuild -scheme PitterPatternMac` (and the iOS-simulator scheme)
+  both BUILD SUCCEEDED with the placeholder `App/` shell — verified before M3.
+  `PitterCore` still builds/tests headlessly (`swift test`) for fast iteration;
+  use Xcode for app/UI work.
 - CLT ships NEITHER swift-testing nor XCTest: swift-testing is pulled as a
   pinned package dependency (see `Package.swift`); test targets MUST also list
   `.target(name: "PitterCore")` explicitly (SPM does not auto-link `@testable`
   imports). Local-model delegations: write each file ONCE, then only fix
   compile/test errors in place — never delete and rewrite files.
 - Delegation calibration so far (category `code`): fail / fail / pass-after-fixes
-  — the local model produces decent single-module structure but breaks
-  cross-checked details when its own tests fail to compile, then runs out
-  of turns. Core implementation stays with the planner; the local model gets
-  self-contained, single-file, table-heavy work only.
+  / fail / fail (T2.3 and T2.2 both stalled mid-task the same way: one
+  plausible source file written, then hung for 10–16 min before writing any
+  tests; sources were ~90% right with 2–3 real bugs each, planner finished
+  both) — the local model produces decent single-module structure but
+  reliably stalls before test iteration. Until this is fixed (context length?
+  turn budget?), delegate single source files WITHOUT expecting tests, or
+  keep code on the planner. Core implementation stays with the planner; the
+  local model gets self-contained, single-file, table-heavy work only.
 
 ## Milestone 1 — Music theory core (headless, `swift test`)
 
@@ -56,12 +61,32 @@ as done.
 
 ## Milestone 2 — Notation model + MusicXML
 
-- [ ] T2.1 NotatedSequence model (concrete spelled pitches + durations + measure
+- [x] T2.1 NotatedSequence model (concrete spelled pitches + durations + measure
       breaking + accidentals-in-context) — `effort: hard`, `scope: online`
+      Spec: `docs/specs/006-notated-sequence.md` — DONE (planner-implemented;
+      12 tests green). Key decisions: divisions=32 duration units with a
+      mod-4 dots policy (the invariant that makes greedy barline-split
+      decomposition total); `NotatedNote.Sound` enum (note/rest) instead of
+      the design note's bare `pitch` so rests can fill the final measure;
+      `transposed(for:)` re-resolves display accidentals under the written key.
 - [ ] T2.2 MusicXML `score-partwise` writer + round-trip tests — `effort: easy`,
-      `scope: local` after T2.1 spec is written
-- [ ] T2.3 Pattern model (scale-relative moves) + built-in pattern catalog
-      (thirds, fourths, arpeggios, …) + unit tests — `effort: easy`, `scope: local`
+      `scope: local` — spec `docs/specs/008-musicxml-writer.md` — DONE
+      (local model stalled again after writing the source; planner finished:
+      fixed its alter-from-display-accidental bug (alter must come from the
+      pitch's own spelling — an in-key F♯ shows no glyph but still needs
+      alter=1), never-emitted tie stops, and missing same-measure tie
+      predecessors; wrote all 8 tests incl. byte-exact golden document).
+      104 tests green.
+- [x] T2.3 Pattern model (scale-relative moves) + built-in pattern catalog
+      (thirds, fourths, arpeggios, …) + unit tests — `effort: easy`,
+      `scope: local` — Spec: `docs/specs/007-patterns.md` — DONE
+      (local model stalled mid-task; planner completed in place: fixed its
+      phase-transition delta-index bug (the retrograde must start on the SAME
+      index that failed), both-sides bounds checks per phase, and phase-3
+      spelled landing; wrote all 11 tests). Reviewer note: five hand-derived
+      sequences in spec 007 were wrong (letter-arithmetic slips); per spec the
+      algorithm is normative and test values were pinned from actual runs —
+      derive expected pattern walks by running, not by hand.
 
 ## Milestone 3 — Staff renderer + selection UI
 
