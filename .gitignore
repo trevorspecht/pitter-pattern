@@ -1,0 +1,21 @@
+# Swift / Xcode
+.DS_Store
+.build/
+build/
+DerivedData/
+*.xcodeproj
+*.xcworkspace
+xcuserdata/
+*.ipa
+*.dSYM
+
+# Swift Package Manager
+Package.resolved
+.swiftpm/
+
+# XcodeGen
+*.xcodeproj
+
+# Misc
+*.log
+.env
