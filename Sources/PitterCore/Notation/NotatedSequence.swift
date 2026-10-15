@@ -93,17 +93,20 @@ public struct NotatedSequence: Hashable, Codable, Sendable {
     /// length.
     public let measures: [[NotatedNote]]
 
-    /// Uniform-duration construction (defaults to quarters).
+    /// Uniform-duration construction (defaults to quarters). The final
+    /// note may get a different duration (`finalDuration`, e.g. `.whole`
+    /// for the classic whole-note pattern ending).
     public init(
         pitches: [Pitch],
         uniformDuration: NoteDuration = .quarter,
+        finalDuration: NoteDuration? = nil,
         context: NotationContext
     ) {
-        self.init(
-            pitches: pitches,
-            durations: Array(repeating: uniformDuration, count: pitches.count),
-            context: context
-        )
+        var durations = Array(repeating: uniformDuration, count: pitches.count)
+        if let finalDuration, !durations.isEmpty {
+            durations[durations.count - 1] = finalDuration
+        }
+        self.init(pitches: pitches, durations: durations, context: context)
     }
 
     /// Per-note-duration construction.

@@ -66,9 +66,20 @@ moves instead of single steps:
    landing outside the bounds ends phase 1 (that note is NOT appended), and
    phase 2 begins with **the same delta index, negated** (the natural
    retrograde turnaround).
-4. **Phase 2 — descend**: continue cycling delta indexes, applying each delta
-   negated. Append landings while within `[low, high]`; the first landing
-   outside the bounds ends phase 2 (not appended).
+4. **Phase 2 — descend** (amended after app feedback): continue cycling
+   delta indexes, applying each delta negated. A landing appends while its
+   diatonic index ≥ the descent **floor** and its MIDI ≤ `high`. The floor
+   is normally the 7th below the anchored start (one diatonic step under
+   the root) — the classic practice ending descends past the root to the
+   7th and resolves up (… E C D B C, not … E C D C) — but never cuts the
+   descent shorter than `low` allows:
+   `floor = min(lowIndex, anchorIndex − 1)` (octave-jumping patterns and
+   mid-range starts descend past the 7th, to the low bound).
+   `includeEndingSeventh: false` (default true) keeps the floor at `low`
+   for instruments that cannot reach the 7th (the user can skip it).
+   **This ending shape is a v1 general rule — different patterns have
+   different shapes, and per-pattern ending logic will be sorted out as
+   we experiment.**
 5. **Phase 3 — return**: from the last appended pitch `P`, walk by single
    scale steps toward `anchored` (`P < anchored` → `nextUp`, else `nextDown`)
    until `anchored` is appended. If phase 2 ended exactly on `anchored`,
@@ -85,10 +96,9 @@ between two scale notes. Belt-and-braces: a max-steps guard
 (`8 * (high.midi - low.midi) * deltas.count + 64` appended notes) traps on
 non-termination, exactly like `RangeRun`'s guard.
 
-**Ending caveat (documented, v1)**: the phase-3 closure is stepwise, so some
-patterns end with a few scalar notes (e.g. thirds bounded `[C4, G4]` ends
-`… C4 D4 C4`). Smarter closures are a future enhancement; tests pin the
-exact v1 sequences.
+**Ending caveat (documented, v1)**: patterns that skip the 7th (or whose
+zig overshoots the floor, like arpeggios) end with a stepwise phase-3
+closure instead of the 7th-resolve; tests pin the exact v1 sequences.
 
 ## Files
 

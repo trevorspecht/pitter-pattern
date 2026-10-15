@@ -17,7 +17,14 @@ let package = Package(
         .package(url: "https://github.com/swiftlang/swift-testing", from: "0.12.0"),
     ],
     targets: [
-        .target(name: "PitterCore"),
+        .target(
+            name: "PitterCore",
+            resources: [
+                // Bravura SMuFL font (SIL OFL — see Resources/OFL.txt).
+                .copy("Resources/Bravura.otf"),
+                .copy("Resources/OFL.txt"),
+            ]
+        ),
         .testTarget(
             name: "PitterCoreTests",
             dependencies: [

@@ -90,11 +90,47 @@ as done.
 
 ## Milestone 3 — Staff renderer + selection UI
 
-- [ ] T3.1 Staff geometry + Bravura glyph renderer (SwiftUI Canvas) — `effort: hard`,
-      `scope: online` (needs Xcode)
+- [x] T3.1 Staff geometry + Bravura glyph renderer (SwiftUI Canvas) —
+      `effort: hard`, `scope: online` — Spec: `docs/specs/009-staff-renderer.md`
+      — DONE (planner-implemented; 20 new tests, 121 total green; both app
+      targets build). Bravura 1.482 (OFL) bundled via SPM resources;
+      codepoints verified against w3c/smufl glyphnames.json. Key findings:
+      key-signature placement is fourths-with-octave-wrap (sharps wrap
+      +7 above the 2nd line, flats wrap −7 at the top line) — verified
+      against all standard treble positions; `canImport(AppKit)` is true
+      even for the iOS *simulator* SDK, so platform conditionals must use
+      `os()`; renderer verified headlessly via ImageRenderer smoke tests
+      (ink count + a clef-orientation probe above/below the staff).
+      Bass keys with 5+ accidentals: wrap-rule output unverified by eye.
+      Visual review: run the app (demo staff in ContentView) or see
+      /tmp/staff-demo.png from the test run.
 - [ ] T3.2 Selection / viewing UI with category filters, key + time signature
       controls, transpose + range controls, instrument picker — `effort: hard`,
-      `scope: online` (needs Xcode)
+      `scope: online` (needs Xcode) — must also include: app appearance
+      preference (light / dark / system; the page itself stays white-paper
+      by default) and polished zoom controls (slider is in the demo already).
+      Pattern-ending preference (include/skip the ending 7th) may belong
+      here or in the range controls.
+- [x] T3.1b+c App-feedback rounds (2026-10-13, planner): page renderer
+      (portrait 8.5×11 aspect, systems wrap favoring equal WHOLE measures
+      per line, no horizontal scrolling), final barline (thin+thick),
+      time-signature centering (Bravura digits are baseline-symmetric ±1 →
+      baselines 3/1), header spacing from real Bravura advances (gap 1.5
+      spaces, none reserved for an absent key signature, continuation
+      lines leave extra room after the key signature), rest anchors
+      from Bravura bounding boxes, white paper/black ink, zoom slider,
+      system justification (all but the last line stretch their measures
+      so notes fill each measure and sit centered — the root cause of
+      "first note too far left" was the last note's advance piling ~5
+      dead spaces at each measure's right; the last note is now pinned
+      by its head width, lone notes centered as accidental+head group),
+      musical note advances (quarter 6.5 spaces etc.), defaultScale
+      (4 measures per line on an 8.5×11/612pt page) + 680×900pt default
+      window, pattern endings descend to the 7th and resolve to the root
+      (`includeEndingSeventh: false` skips it; floor = min(low, 7th) so
+      octave patterns and mid-range starts still descend; per-pattern
+      ending shapes to be tuned as we experiment), final note as a whole
+      (`finalDuration`). 124 tests green; both app targets build.
 
 ## Milestone 4 — Audio
 

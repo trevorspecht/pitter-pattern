@@ -6,6 +6,10 @@ context. Everything the M3 renderer and the T2.2 MusicXML writer need;
 nothing UI-specific. Concert pitch is canonical (D2); `transposed(for:)`
 produces the written-pitch view.
 
+**Amended after app feedback**: the uniform-duration init gained
+`finalDuration` (e.g. `.whole` for the classic whole-note pattern ending,
+where the final root fills its measure).
+
 Refines `docs/notes/m2-notation-design.md`; deviations from that note are
 flagged inline.
 

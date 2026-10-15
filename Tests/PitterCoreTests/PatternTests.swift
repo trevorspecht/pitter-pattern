@@ -38,8 +38,8 @@ struct PatternTests {
     // MARK: - Exact sequences (C major)
 
     @Test func thirdsBounded() {
-        // Up-third/down-step zig to the top, retrograde down, stepwise
-        // closure home.
+        // Up-third/down-step zig to the top, retrograde down to the 7th,
+        // resolve to the root.
         let run = pattern("thirds").generate(
             in: cMajor(), from: p(.c, octave: 4),
             low: p(.c, octave: 4), high: p(.g, octave: 4))
@@ -47,7 +47,7 @@ struct PatternTests {
             p(.c, octave: 4), p(.e, octave: 4), p(.d, octave: 4), p(.f, octave: 4),
             p(.e, octave: 4), p(.g, octave: 4), p(.f, octave: 4),
             p(.d, octave: 4), p(.e, octave: 4), p(.c, octave: 4), p(.d, octave: 4),
-            p(.c, octave: 4),
+            p(.b, octave: 3), p(.c, octave: 4),
         ])
     }
 
@@ -58,9 +58,34 @@ struct PatternTests {
             low: p(.c, octave: 4), high: p(.c, octave: 5))
         let scaleRun = scale.boundedRun(
             from: p(.c, octave: 4), low: p(.c, octave: 4), high: p(.c, octave: 5))
-        #expect(run == scaleRun)
-        #expect(run.count == 15)
+        // The seconds pattern ends with the 7th-resolve convention
+        // (… C4 B3 C4); the scale run ends on its low bound.
+        #expect(run.dropLast(2) == scaleRun)
+        #expect(run.suffix(3) == [p(.c, octave: 4), p(.b, octave: 3), p(.c, octave: 4)])
+        #expect(run.count == 17)
         #expect(run.first == run.last)
+    }
+
+    @Test func endingSeventhConventionAndSkip() {
+        // The demo case: thirds in C major from C4 to C5 ends
+        // … E C D B C (7th resolving to the root).
+        let run = pattern("thirds").generate(
+            in: cMajor(), from: p(.c, octave: 4),
+            low: p(.c, octave: 4), high: p(.c, octave: 5))
+        #expect(run.suffix(5) == [
+            p(.e, octave: 4), p(.c, octave: 4), p(.d, octave: 4),
+            p(.b, octave: 3), p(.c, octave: 4),
+        ])
+
+        // Skipping the ending 7th (instrument cannot reach it): the
+        // descent stalls a step above the root instead.
+        let skipped = pattern("thirds").generate(
+            in: cMajor(), from: p(.c, octave: 4),
+            low: p(.c, octave: 4), high: p(.c, octave: 5),
+            includeEndingSeventh: false)
+        #expect(skipped.suffix(4) == [
+            p(.e, octave: 4), p(.c, octave: 4), p(.d, octave: 4), p(.c, octave: 4),
+        ])
     }
 
     @Test func tonicArpeggio() {
@@ -93,7 +118,8 @@ struct PatternTests {
             p(.e, octave: 4), p(.a, octave: 4), p(.f, octave: 4), p(.b, octave: 4),
             p(.g, octave: 4), p(.c, octave: 5), p(.a, octave: 4),
             p(.e, octave: 4), p(.g, octave: 4), p(.d, octave: 4), p(.f, octave: 4),
-            p(.c, octave: 4), p(.e, octave: 4), p(.d, octave: 4), p(.c, octave: 4),
+            p(.c, octave: 4), p(.e, octave: 4), p(.b, octave: 3),
+            p(.d, octave: 4), p(.c, octave: 4),
         ])
     }
 
@@ -118,8 +144,8 @@ struct PatternTests {
         #expect(run == [
             p(.g, octave: 4),
             p(.e, octave: 4), p(.f, octave: 4), p(.d, octave: 4), p(.e, octave: 4),
-            p(.c, octave: 4), p(.d, octave: 4),
-            p(.e, octave: 4), p(.f, octave: 4), p(.g, octave: 4),
+            p(.c, octave: 4), p(.d, octave: 4), p(.e, octave: 4), p(.f, octave: 4),
+            p(.g, octave: 4),
         ])
     }
 
@@ -152,7 +178,7 @@ struct PatternTests {
             p(.b, .flat, octave: 4), p(.c, octave: 5), p(.a, .flat, octave: 4),
             p(.b, .flat, octave: 4), p(.g, octave: 4), p(.a, .flat, octave: 4),
             p(.f, octave: 4), p(.g, octave: 4), p(.e, .flat, octave: 4),
-            p(.f, octave: 4), p(.e, .flat, octave: 4),
+            p(.f, octave: 4), p(.d, octave: 4), p(.e, .flat, octave: 4),
         ])
         #expect(run.first == run.last)
     }
